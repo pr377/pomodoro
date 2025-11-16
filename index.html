@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aesthetic Pomodoro Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0b1e;
+            --bg-light: #1a1b2e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0aec0;
+            --accent-glow: #7b00ff;
+            --accent-solid: #8a2be2;
+            --card-bg: rgba(26, 27, 46, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background-image: linear-gradient(to bottom right, var(--bg-dark), var(--bg-light));
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem;
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border: 1px solid rgba(123, 0, 255, 0.2);
+            border-radius: 2rem;
+            box-shadow: 0 0 30px rgba(123, 0, 255, 0.1);
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: rgba(10, 11, 30, 0.7);
+            padding: 0.5rem;
+            border-radius: 9999px;
+            width: 100%;
+        }
+
+        .mode-selector button {
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+            font-size: 0.9rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+        }
+
+        .mode-selector button.active {
+            background-color: var(--accent-solid);
+            color: white;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        
+        .mode-selector button:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .timer-display {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-display #progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .timer-display #time-left {
+            position: absolute;
+            font-size: 5rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            color: var(--text-primary);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .controls button {
+            border: none;
+            cursor: pointer;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+        }
+        
+        .controls button:focus {
+            outline: 2px solid var(--accent-glow);
+            outline-offset: 3px;
+        }
+
+        #start-pause-btn {
+            width: 10rem;
+            height: 4rem;
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            background-color: var(--accent-solid);
+            color: white;
+        }
+        
+        #start-pause-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(138, 43, 226, 0.4);
+        }
+        
+        #reset-btn {
+            width: 4rem;
+            height: 4rem;
+            background-color: var(--card-bg);
+            color: var(--text-secondary);
+        }
+
+        #reset-btn:hover {
+            transform: scale(1.05);
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #reset-btn svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin: auto;
+        }
+        
+        footer {
+            position: absolute;
+            bottom: 1rem;
+            color: rgba(160, 174, 192, 0.5);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 1.5rem;
+                gap: 2rem;
+            }
+            .timer-display {
+                width: 260px;
+                height: 260px;
+            }
+            .timer-display #time-left {
+                font-size: 4rem;
+            }
+            .mode-selector button {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="mode-selector">
+            <button id="pomodoro-btn" class="active">Pomodoro</button>
+            <button id="short-break-btn">Short Break</button>
+            <button id="long-break-btn">Long Break</button>
+        </div>
+
+        <div class="timer-display">
+            <svg id="progress-ring" width="300" height="300" viewBox="0 0 300 300">
+                <circle cx="150" cy="150" r="140" stroke="rgba(123, 0, 255, 0.1)" stroke-width="12" fill="transparent" />
+                <circle id="progress-circle" cx="150" cy="150" r="140" stroke="url(#gradient)" stroke-width="12" fill="transparent" stroke-linecap="round" />
+                 <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#7b00ff" />
+                      <stop offset="100%" stop-color="#c471ed" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div id="time-left">25:00</div>
+        </div>
+
+        <div class="controls">
+            <button id="start-pause-btn">START</button>
+            <button id="reset-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-4.991-2.696a8.25 8.25 0 00-11.664 0l-3.181 3.183" />
+                </svg>
+            </button>
+        </div>
+    </main>
+    <footer id="footer-text">Pomodoro cycles completed: 0</footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTANTS & STATE ---
+            const TIME_SETTINGS = {
+                pomodoro: 25 * 60,
+                shortBreak: 5 * 60,
+                longBreak: 15 * 60,
+            };
+            const POMODOROS_UNTIL_LONG_BREAK = 4;
+
+            let currentMode = 'pomodoro';
+            let timeRemaining = TIME_SETTINGS.pomodoro;
+            let isActive = false;
+            let pomodoroCount = 0;
+            let timerInterval = null;
+
+            // --- DOM ELEMENTS ---
+            const timeLeftEl = document.getElementById('time-left');
+            const startPauseBtn = document.getElementById('start-pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const footerText = document.getElementById('footer-text');
+            const modeButtons = {
+                pomodoro: document.getElementById('pomodoro-btn'),
+                shortBreak: document.getElementById('short-break-btn'),
+                longBreak: document.getElementById('long-break-btn'),
+            };
+            const progressCircle = document.getElementById('progress-circle');
+            const radius = progressCircle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressCircle.style.strokeDashoffset = 0;
+
+            // --- UTILITY FUNCTIONS ---
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                return `${mins}:${secs}`;
+            };
+
+            const playNotificationSound = () => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (!audioContext) return;
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            };
+
+            // --- UI UPDATE FUNCTION ---
+            const updateUI = () => {
+                // Update time display
+                timeLeftEl.textContent = formatTime(timeRemaining);
+
+                // Update page title
+                const status = isActive ? 'Time to focus!' : 'Paused';
+                document.title = `${formatTime(timeRemaining)} - ${status}`;
+
+                // Update progress ring
+                const totalDuration = TIME_SETTINGS[currentMode];
+                const progress = timeRemaining / totalDuration;
+                const offset = circumference - progress * circumference;
+                progressCircle.style.strokeDashoffset = offset;
+                
+                // Update button text
+                startPauseBtn.textContent = isActive ? 'PAUSE' : 'START';
+
+                // Update mode buttons
+                for (const mode in modeButtons) {
+                    modeButtons[mode].classList.toggle('active', mode === currentMode);
+                }
+
+                // Update footer
+                footerText.textContent = `Pomodoro cycles completed: ${pomodoroCount}`;
+            };
+
+            // --- TIMER LOGIC ---
+            const handleNextMode = () => {
+                if (currentMode === 'pomodoro') {
+                    pomodoroCount++;
+                    if (pomodoroCount % POMODOROS_UNTIL_LONG_BREAK === 0) {
+                        switchMode('longBreak');
+                    } else {
+                        switchMode('shortBreak');
+                    }
+                } else {
+                    switchMode('pomodoro');
+                }
+                 // Automatically start the next timer
+                setTimeout(() => {
+                    isActive = true;
+                    startTimer();
+                    updateUI();
+                }, 100);
+            };
+            
+            const tick = () => {
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isActive = false;
+                    playNotificationSound();
+                    handleNextMode();
+                } else {
+                    timeRemaining--;
+                }
+                updateUI();
+            };
+
+            const startTimer = () => {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(tick, 1000);
+            };
+            
+            const stopTimer = () => {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            const resetTimer = () => {
+                stopTimer();
+                isActive = false;
+                timeRemaining = TIME_SETTINGS[currentMode];
+                updateUI();
+            };
+
+            const switchMode = (newMode) => {
+                currentMode = newMode;
+                resetTimer();
+            };
+
+            // --- EVENT HANDLERS ---
+            const handleStartPauseClick = () => {
+                isActive = !isActive;
+                if (isActive) {
+                    startTimer();
+                } else {
+                    stopTimer();
+                }
+                updateUI();
+            };
+            
+            // --- EVENT LISTENERS ---
+            startPauseBtn.addEventListener('click', handleStartPauseClick);
+            resetBtn.addEventListener('click', resetTimer);
+            modeButtons.pomodoro.addEventListener('click', () => switchMode('pomodoro'));
+            modeButtons.shortBreak.addEventListener('click', () => switchMode('shortBreak'));
+            modeButtons.longBreak.addEventListener('click', () => switchMode('longBreak'));
+
+            // --- INITIALIZATION ---
+            updateUI();
+        });
+    </script>
+</body>
+</html>

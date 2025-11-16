@@ -1,0 +1,5 @@
+{
+  "name": "Aesthetic Pomodoro Timer",
+  "description": "A sleek, modern, and aesthetic Pomodoro timer with a dark anime/lo-fi vibe, built with vanilla HTML, CSS, and JavaScript. Features customizable work, short break, and long break intervals, a circular progress indicator, and audio notifications in a single, framework-free file.",
+  "requestFramePermissions": []
+}
